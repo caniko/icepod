@@ -3,7 +3,6 @@
 
   inputs = {
     harbor-rs.url = "github:caniko/harbor-rs";
-    rs-harbor.follows = "harbor-rs";
     nixpkgs.follows = "harbor-rs/nixpkgs";
     rust-overlay.follows = "harbor-rs/rust-overlay";
     crane.follows = "harbor-rs/crane";
