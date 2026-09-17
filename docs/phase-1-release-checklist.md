@@ -1,0 +1,22 @@
+# Phase 1 Release Checklist
+
+- [x] Separate GUI, service, and CLI processes
+- [x] Versioned authenticated local IPC and state snapshot
+- [x] Explicit centralized state transitions and idempotent requests
+- [x] Deterministic multichannel simulation
+- [x] Bounded preallocated realtime handoff
+- [x] Callback allocation and timing checks
+- [x] Mono synchronized RF64/BWF files validated by bwavfile
+- [x] Checksummed truncation-safe journal and atomic manifest
+- [x] Non-destructive interrupted-session recovery
+- [x] Pause, resume, markers, incidents, disk estimate, take browser
+- [x] Accelerated and wall-clock soak commands; scheduled accelerated job
+- [ ] CPAL input callback connected to realtime writer
+- [ ] Low-latency monitor ring and output callback
+- [ ] Live service meter stream at 30-60 Hz
+- [ ] Input loss finalizes a segment and offers resume
+- [ ] Proactive physical disk-critical stop
+- [ ] Cue/label chunks in final files
+- [ ] Explicit Hello/capability/heartbeat stream and peer credentials
+- [ ] Four-hour wall-clock soak completed
+- [ ] Physical Linux, Windows, and macOS recording validation

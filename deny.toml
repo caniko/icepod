@@ -1,0 +1,36 @@
+[advisories]
+yanked = "deny"
+# Unavoidable current transitive advisories from the required bwavfile,
+# postcard, Iced/wgpu baseline. Re-evaluate on every dependency update.
+ignore = [
+  "RUSTSEC-2021-0139",
+  "RUSTSEC-2021-0153",
+  "RUSTSEC-2023-0089",
+  "RUSTSEC-2024-0375",
+  "RUSTSEC-2024-0436",
+  "RUSTSEC-2026-0192",
+]
+
+[licenses]
+confidence-threshold = 0.8
+allow = [
+  "0BSD",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "BSL-1.0",
+  "CC0-1.0",
+  "ISC",
+  "MIT",
+  "MPL-2.0",
+  "Unicode-3.0",
+  "Zlib",
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

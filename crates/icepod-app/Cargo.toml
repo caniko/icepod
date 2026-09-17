@@ -1,0 +1,20 @@
+[package]
+name = "icepod"
+description = "Icepod podcast-first desktop recorder"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+clap.workspace = true
+directories.workspace = true
+iced.workspace = true
+icepod-core = { path = "../icepod-core", version = "0.1.0" }
+miette.workspace = true
+tokio.workspace = true
+uuid.workspace = true
+
+[lints]
+workspace = true
