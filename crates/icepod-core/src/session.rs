@@ -81,7 +81,10 @@ impl SessionManifest {
         let temporary = path.with_extension("json.tmp");
         let bytes = serde_json::to_vec_pretty(self).map_err(io::Error::other)?;
         fs::write(&temporary, bytes)?;
-        let file = fs::OpenOptions::new().read(true).open(&temporary)?;
+        let file = fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(&temporary)?;
         file.sync_all()?;
         fs::rename(temporary, path)?;
         sync_directory(parent)
@@ -93,7 +96,17 @@ impl SessionManifest {
 }
 
 fn sync_directory(path: &Path) -> io::Result<()> {
-    fs::File::open(path)?.sync_all()
+    let mut options = fs::OpenOptions::new();
+    options.read(true);
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::OpenOptionsExt;
+
+        // CreateFile requires FILE_FLAG_BACKUP_SEMANTICS for directory handles;
+        // FlushFileBuffers additionally requires GENERIC_WRITE access.
+        options.write(true).custom_flags(0x0200_0000);
+    }
+    options.open(path)?.sync_all()
 }
 
 #[cfg(test)]
@@ -103,7 +116,7 @@ mod tests {
     #[test]
     fn atomic_manifest_round_trip() {
         let temporary = tempfile::tempdir().unwrap();
-        let manifest = SessionManifest {
+        let mut manifest = SessionManifest {
             format_version: 1,
             session_id: Uuid::nil(),
             take_id: Uuid::nil(),
@@ -121,5 +134,9 @@ mod tests {
         let path = temporary.path().join("session.json");
         manifest.write_atomic(&path).unwrap();
         assert_eq!(SessionManifest::load(&path).unwrap().name, "test");
+        manifest.name = "replaced".into();
+        manifest.write_atomic(&path).unwrap();
+        assert_eq!(SessionManifest::load(&path).unwrap().name, "replaced");
+        assert!(!path.with_extension("json.tmp").exists());
     }
 }
