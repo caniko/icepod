@@ -4,7 +4,7 @@ use std::{
 };
 
 use interprocess::local_socket::{
-    GenericFilePath, GenericNamespaced,
+    GenericFilePath,
     tokio::{Stream, prelude::*},
 };
 use serde::{Serialize, de::DeserializeOwned};
@@ -17,17 +17,28 @@ use crate::protocol::{
 pub const SOCKET_BASENAME: &str = "service.sock";
 pub const TOKEN_BASENAME: &str = "service.token";
 
-pub fn socket_path(runtime_dir: &Path) -> PathBuf {
-    runtime_dir.join(SOCKET_BASENAME)
+pub fn socket_path(runtime_dir: &Path) -> io::Result<PathBuf> {
+    #[cfg(windows)]
+    {
+        use std::hash::{DefaultHasher, Hash, Hasher};
+
+        let mut name = DefaultHasher::new();
+        runtime_dir.canonicalize()?.hash(&mut name);
+        // ponytail: a 64-bit routing tag keeps pipe names bounded; persist a UUID
+        // if cross-toolchain name stability is needed. The token authenticates IPC.
+        Ok(PathBuf::from(format!(
+            r"\\.\pipe\icepod-{:016x}",
+            name.finish()
+        )))
+    }
+    #[cfg(not(windows))]
+    {
+        Ok(runtime_dir.join(SOCKET_BASENAME))
+    }
 }
 
 pub async fn connect(runtime_dir: &Path) -> io::Result<Stream> {
-    if GenericFilePath::is_supported() {
-        let path = socket_path(runtime_dir);
-        Stream::connect(path.as_path().to_fs_name::<GenericFilePath>()?).await
-    } else {
-        Stream::connect("icepod-service".to_ns_name::<GenericNamespaced>()?).await
-    }
+    Stream::connect(socket_path(runtime_dir)?.to_fs_name::<GenericFilePath>()?).await
 }
 
 pub async fn write_async<T: Serialize>(stream: &mut &Stream, value: &T) -> io::Result<()> {

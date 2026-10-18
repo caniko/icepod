@@ -16,7 +16,7 @@ use icepod_core::{
     recover_session,
 };
 use interprocess::local_socket::{
-    GenericFilePath, GenericNamespaced, ListenerOptions,
+    GenericFilePath, ListenerOptions,
     tokio::{Listener, Stream, prelude::*},
 };
 use miette::{IntoDiagnostic, Result as MietteResult};
@@ -314,8 +314,8 @@ async fn main() -> MietteResult<()> {
     secure_directory(&runtime_dir).into_diagnostic()?;
     fs::create_dir_all(&sessions_root).into_diagnostic()?;
     let token = Uuid::new_v4().simple().to_string();
-    write_token(&runtime_dir.join(ipc::TOKEN_BASENAME), &token).into_diagnostic()?;
     let listener = create_listener(&runtime_dir).into_diagnostic()?;
+    write_token(&runtime_dir.join(ipc::TOKEN_BASENAME), &token).into_diagnostic()?;
     info!(simulate = args.simulate, runtime = %runtime_dir.display(), sessions = %sessions_root.display(), "Icepod audio service ready");
     let service = Arc::new(Mutex::new(Service {
         token,
@@ -350,17 +350,10 @@ async fn handle_client(stream: Stream, service: Arc<Mutex<Service>>) -> io::Resu
 }
 
 fn create_listener(runtime_dir: &Path) -> io::Result<Listener> {
-    let options = ListenerOptions::new().try_overwrite(true);
-    if GenericFilePath::is_supported() {
-        let path = ipc::socket_path(runtime_dir);
-        options
-            .name(path.as_path().to_fs_name::<GenericFilePath>()?)
-            .create_tokio()
-    } else {
-        options
-            .name("icepod-service".to_ns_name::<GenericNamespaced>()?)
-            .create_tokio()
-    }
+    ListenerOptions::new()
+        .try_overwrite(true)
+        .name(ipc::socket_path(runtime_dir)?.to_fs_name::<GenericFilePath>()?)
+        .create_tokio()
 }
 
 fn default_runtime_dir() -> PathBuf {
