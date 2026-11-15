@@ -2,7 +2,7 @@
   description = "Icepod podcast-first desktop recorder";
 
   inputs = {
-    harbor-rs.url = "github:caniko/harbor-rs";
+    harbor-rs.url = "github:caniko/harbor-rs/32ff87a4cbf5eac35e8bfa5bd4fb5ab887eb77fd";
     nixpkgs.follows = "harbor-rs/nixpkgs";
     rust-overlay.follows = "harbor-rs/rust-overlay";
     crane.follows = "harbor-rs/crane";
